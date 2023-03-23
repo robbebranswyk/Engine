@@ -196,3 +196,105 @@ Figure createSphere(const int n) {
     }
     return sphere;
 }
+
+Figure createCone(const int n, const double h) {
+    Figure cone;
+
+    //Top aanmaken
+    Vector3D top = Vector3D::point(0,0,h);
+
+    //Alle punten aanmaken en toevoegen
+    for (int i = 0; i < n; i++) {
+        Vector3D pointi = Vector3D::point(cos(2 * i * M_PI / n), sin(2 * i * M_PI / n), 0);
+        cone.points.push_back(pointi);
+    }
+
+    //Top toevoegen
+    cone.points.push_back(top);
+
+    //Alle faces aanmaken
+    for (int i = 0; i < n; i++) {
+        Face facei = Face({i, (i+1)%n, n});
+        cone.faces.push_back(facei);
+    }
+
+    //Ondervlak
+    Face underFace = Face();
+    for (int i = 0; i < n; i++) {
+        underFace.point_indexes.push_back(i);
+    }
+
+    return cone;
+}
+
+Figure createCylinder(const int n, const double h) {
+    Figure cylinder;
+    
+    //Punten aanmaken ondervlak
+    for (int i = 0; i < n; i++) {
+        Vector3D pointi = Vector3D::point(cos(2 * i * M_PI / n), sin(2 * i * M_PI / n), 0);
+        cylinder.points.push_back(pointi);
+    }
+
+    //Punten aanmaken bovenvlak
+    for (int i = n; i < 2*n; i++) {
+        Vector3D pointi = Vector3D::point(cos(2 * (i%n) * M_PI / n), sin(2 * (i%n) * M_PI / n), h);
+        cylinder.points.push_back(pointi);
+    }
+
+    //Ondervlak
+    Face bottomFace = Face();
+    for (int i = 0; i < n; i++) {
+        bottomFace.point_indexes.push_back(i);
+    }
+    cylinder.faces.push_back(bottomFace);
+
+    //Bovenvlak
+    Face topFace = Face();
+    for (int i = n; i < 2*n; i++) {
+        topFace.point_indexes.push_back(i);
+    }
+    cylinder.faces.push_back(topFace);
+
+    //Zijvlakken
+    for (int i = 0; i < n; i++) {
+        Face facei = Face({i, (i+1)%n, ((i+1)%n)+n, i+n});
+        cylinder.faces.push_back(facei);
+    }
+
+    return cylinder;
+
+}
+
+Figure createTorus(const double r, const double R, const int n, const int m) {
+    Figure torus;
+
+    //Alle punten aanmaken
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            double u = 2*i*M_PI/n;
+            double v = 2*j*M_PI/m;
+            Vector3D point = parameterVgl(u, v, r, R);
+            torus.points.push_back(point);
+        }
+    }
+
+    //Alle faces aanmaken
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            Face face = Face({(j+(i*m)), (j+((i+1)%n)*m), (((j+1)%m) + ((i+1)%n)*m), (((j+1)%m) + i*m)});
+            torus.faces.push_back(face);
+        }
+    }
+
+    return torus;
+
+}
+
+Vector3D parameterVgl(double u, double v, const double r, const double R) {
+    double x = (R + r* cos(v))* cos(u);
+    double y = (R + r* cos(v))* sin(u);
+    double z = r* sin(v);
+
+    return Vector3D::point(x, y, z);
+}

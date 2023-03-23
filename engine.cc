@@ -151,6 +151,29 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 figure.color = figureColor;
             }
 
+            else if (type == "Cone"){
+                int n = configuration[figi]["n"].as_int_or_die();
+                double h = configuration[figi]["height"].as_double_or_die();
+                figure = createCone(n, h);
+                figure.color = figureColor;
+            }
+
+            else if (type == "Cylinder"){
+                int n = configuration[figi]["n"].as_int_or_die();
+                double h = configuration[figi]["height"].as_double_or_die();
+                figure = createCylinder(n, h);
+                figure.color = figureColor;
+            }
+
+            else if (type == "Torus"){
+                int n = configuration[figi]["n"].as_int_or_die();
+                int m = configuration[figi]["m"].as_int_or_die();
+                double r = configuration[figi]["r"].as_double_or_die();
+                double R = configuration[figi]["R"].as_double_or_die();
+                figure = createTorus(r, R, n, m);
+                figure.color = figureColor;
+            }
+
             //De verschillende transformaties uitlezen en toepassen op de figuur
             //Scaling
             double scaleFactor = configuration[figi]["scale"].as_double_or_die();
