@@ -3,8 +3,9 @@
 //
 
 #include "L2DSystemen.h"
+#include "ZBuffering.h"
 
-img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor){
+img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor, bool zbuf) {
     //1. Bepaal de minima en maxima
     Line2D firstLine = lines.front();
     double xmin = firstLine.p1.x; double xmax = firstLine.p1.x;
@@ -52,9 +53,15 @@ img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor){
 
     //5. Coördinaten afronden en Lijnen tekenen
     img::EasyImage image(lround(imageX), lround(imageY), backColor.toColor());
+    ZBuffer zbuffer = ZBuffer(lround(imageX), lround(imageY));
 
-    for (auto i : lines){
-        image.draw_line(lround(i.p1.x), lround(i.p1.y), lround(i.p2.x), lround(i.p2.y), i.color.toColor());
+    for (auto line : lines){
+        if(zbuf){
+            draw_zbuf_line(zbuffer, image, lround(line.p1.x), lround(line.p1.y), line.z1, lround(line.p2.x), lround(line.p2.y), line.z2, line.color.toColor());
+        }
+        else {
+            image.draw_line(lround(line.p1.x), lround(line.p1.y), lround(line.p2.x), lround(line.p2.y), line.color.toColor());
+        }
     }
 
     return image;

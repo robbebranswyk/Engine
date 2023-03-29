@@ -22,7 +22,7 @@ set(engine_sources
 	vector3d.cc
 	L2DSystemen.cc  L2DSystemen.h
 	intro.cc intro.h
-	3DLineDrawing.cc 3DLineDrawing.h 3DFigures.cpp 3DFigures.h)
+	3DLineDrawing.cc 3DLineDrawing.h 3DFigures.cpp 3DFigures.h ZBuffering.h ZBuffering.cpp)
 
 ############################################################
 # Create an executable

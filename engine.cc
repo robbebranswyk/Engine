@@ -6,6 +6,7 @@
 #include "L2DSystemen.h"
 #include "3DLineDrawing.h"
 #include "3DFigures.h"
+#include "ZBuffering.h"
 
 #include <fstream>
 #include <iostream>
@@ -20,6 +21,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 img::EasyImage generate_image(const ini::Configuration &configuration)
 {
+    //ZBuffer test = ZBuffer(10,20);
     string type = configuration["General"]["type"].as_string_or_die();
 
     if (type == "IntroColorRectangle"){
@@ -70,10 +72,10 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         input_stream.close();
 
         Lines2D LSystemLines = drawLSystem(l_system, lineColor);
-        return draw2DLines(LSystemLines, size, backColor);
+        return draw2DLines(LSystemLines, size, backColor, false);
     }
 
-    else if (type == "Wireframe"){
+    else if (type == "Wireframe" or type == "ZBufferedWireframe"){
         //Eyepoint uitlezen en Matrix aanmaken
         vector<double> eye = configuration["General"]["eye"].as_double_tuple_or_die();
         Vector3D eyePoint = Vector3D::point(eye[0], eye[1], eye[2]);
@@ -174,6 +176,34 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 figure.color = figureColor;
             }
 
+            else if (type ==  "3DLSystem"){
+                string inputfile = configuration[figi]["inputfile"].as_string_or_die();
+
+                LParser::LSystem3D l_system;
+                ifstream input_stream(inputfile);
+                input_stream >> l_system;
+                input_stream.close();
+
+                figure = draw3DLsystem(l_system);
+                figure.color = figureColor;
+
+            }
+
+            //EXTRA
+            else if (type == "Mobius"){
+                int n = configuration[figi]["n"].as_int_or_die();
+                int m = configuration[figi]["m"].as_int_or_die();
+                figure = createMobius(n, m);
+                figure.color = figureColor;
+            }
+
+            else if (type == "nvTorus"){
+                int n = configuration[figi]["n"].as_int_or_die();
+                int m = configuration[figi]["m"].as_int_or_die();
+                figure = createNavelvormigeTorus(n, m);
+                figure.color = figureColor;
+            }
+
             //De verschillende transformaties uitlezen en toepassen op de figuur
             //Scaling
             double scaleFactor = configuration[figi]["scale"].as_double_or_die();
@@ -211,6 +241,10 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
 
         //Omzetten naar vector van 2D lijnen
         Lines2D linesDrawing = doProjection(theFigure);
+
+        if (type == "ZBufferedWireframe"){
+            return draw2DLines(linesDrawing, size, backColor, true);
+        }
         return draw2DLines(linesDrawing, size, backColor);
     }
 

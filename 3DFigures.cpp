@@ -298,3 +298,158 @@ Vector3D parameterVgl(double u, double v, const double r, const double R) {
 
     return Vector3D::point(x, y, z);
 }
+
+Figure draw3DLsystem(LParser::LSystem3D &l_system) {
+    Figure System3D;
+    Vector3D currPos = Vector3D::point(0,0,0);
+
+    Vector3D H = Vector3D::vector(1,0,0);
+    Vector3D L = Vector3D::vector(0,1,0);
+    Vector3D U = Vector3D::vector(0,0,1);
+
+    //1. Al de Informatie ophalen
+    set<char> Alphabet = l_system.get_alphabet();
+    //verzamelingen met A0 de symbolen zonder tekenen en A1 met tekenen
+    set<char> A0 = {};
+    set<char> A1 = {};
+    for (char i : Alphabet){
+        if(l_system.draw(i)){A1.insert(i);}
+        else {A0.insert(i);}
+    }
+    //Beginhoek en hoek omzettenn naar radialen
+    double Angle = l_system.get_angle() * (M_PI/180.0);
+    //Iteration ophalen
+    string initiator = l_system.get_initiator();
+
+
+    //2. Beginnen Loopen en juiste string vormen
+    string bigString = initiator;
+
+    for (int i = 0; i < l_system.get_nr_iterations(); i++) {
+        string tempString = "";
+        for (char c : bigString){
+            if (Alphabet.find(c) != Alphabet.end()){
+                tempString += l_system.get_replacement(c);
+            } else {
+                tempString += c;
+            }
+        }
+        bigString = tempString;
+    }
+
+    //3. Over de String lopen
+    vector<vector<Vector3D>> save = {};
+
+    for (char c: bigString){
+        Vector3D oldH = H;
+        Vector3D oldL = L;
+        Vector3D oldU = U;
+        if (c == '+'){
+            H = oldH* cos(Angle) + oldL * sin(Angle);
+            L = oldH * (-sin(Angle)) + oldL * cos(Angle);
+        } else if (c == '-'){
+            H = oldH* cos(-Angle) + oldL * sin(-Angle);
+            L = oldH * (-sin(-Angle)) + oldL * cos(-Angle);
+        } else if (c == '^'){
+            H = oldH* cos(Angle) + oldU * sin(Angle);
+            U = oldH * (-sin(Angle)) + oldU * cos(Angle);
+        } else if (c == '&'){
+            H = oldH* cos(-Angle) + oldU * sin(-Angle);
+            U = oldH * (-sin(-Angle)) + oldU * cos(-Angle);
+        } else if (c == '\\'){
+            L = oldL*cos(Angle) - oldU*sin(Angle);
+            U = oldL*sin(Angle) + oldU*cos(Angle);
+        } else if (c == '/'){
+            L = oldL*cos(-Angle) - oldU*sin(-Angle);
+            U = oldL*sin(-Angle) + oldU*cos(-Angle);
+        } else if (c == '|'){
+            H = -H;
+            L = -L;
+        } else if (c == '('){
+            save.push_back({currPos, H, L, U});
+        } else if (c == ')'){
+            vector<Vector3D> recover = save[save.size()-1];
+            save.pop_back();
+            currPos = recover[0];
+            H = recover[1];
+            L = recover[2];
+            U = recover[3];
+        } else {
+            if(l_system.draw(c)){
+                System3D.points.push_back(currPos);
+                System3D.points.push_back(currPos+H);
+
+                int pointSize = System3D.points.size();
+                Face newFace = Face({pointSize-2, pointSize-1});
+                System3D.faces.push_back(newFace);
+            }
+            currPos += H;
+        }
+    }
+
+    return System3D;
+}
+
+Figure createMobius(const int n, const int m) {
+    Figure mobius;
+
+    //Alle punten aanmaken
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            double u = 2*i*M_PI/n;
+            double v = 2*j*M_PI/m;
+            Vector3D point = mobiusParameterVgl(u, v);
+            mobius.points.push_back(point);
+        }
+    }
+
+    //Alle faces aanmaken
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            Face face = Face({(j+(i*m)), (j+((i+1)%n)*m), (((j+1)%m) + ((i+1)%n)*m), (((j+1)%m) + i*m)});
+            mobius.faces.push_back(face);
+        }
+    }
+
+    return mobius;
+}
+
+Vector3D mobiusParameterVgl(double u, double v) {
+    double x = (1+(1/2)*v*cos(1/2)*u);
+    double y = (1+(1/2)*v*cos(1/2)*v);
+    double z = (1/2)*v*sin(1/2)*u;
+
+    return Vector3D::point(x, y, z);
+}
+
+Figure createNavelvormigeTorus(const int n, const int m) {
+    Figure nvTorus;
+
+    //Alle punten aanmaken
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            double u = 2*i*M_PI/n;
+            double v = 2*j*M_PI/m;
+            Vector3D point = nvTorusParameterVgl(u, v);
+            nvTorus.points.push_back(point);
+        }
+    }
+
+    //Alle faces aanmaken
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            Face face = Face({(j+(i*m)), (j+((i+1)%n)*m), (((j+1)%m) + ((i+1)%n)*m), (((j+1)%m) + i*m)});
+            nvTorus.faces.push_back(face);
+        }
+    }
+
+    return nvTorus;
+}
+
+Vector3D nvTorusParameterVgl(double u, double v) {
+    double x = sin(u)*(7+ cos((u/3)-2*u) + 2*cos((u/3)+v));
+    double y = cos(u)*(7+ cos((u/3)-2*u) + 2*cos((u/3)+v));
+    double z = sin((u/3) - 2*v) + 2*sin((u/3)+v);
+
+    return Vector3D::point(x, y, z);
+}

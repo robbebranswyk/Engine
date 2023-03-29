@@ -48,12 +48,16 @@ public:
     Point2D p2;
     Color color;
 
+    //Voor Z-buffering
+    double z1;
+    double z2;
+
     Line2D(const Point2D &p1, const Point2D &p2, const Color &color) : p1(p1), p2(p2), color(color) {}
 };
 
 using Lines2D = list<Line2D>;
 
-img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor);
+img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor, bool zbuf = false);
 
 Lines2D drawLSystem(LParser::LSystem2D &l_system, Color lineColor);
 #endif //ENGINE_L2DSYSTEMEN_H

@@ -25,6 +25,16 @@ Figure createCylinder(const int n, const double h);
 Figure createTorus(const double r, const double R, const int n, const int m);
 Vector3D parameterVgl(double u, double v, const double r, const double R);
 
+//3D L-systemen
+Figure draw3DLsystem(LParser::LSystem3D &l_system);
+
+//EXTRA
+Figure createMobius(const int n, const int m);
+Vector3D mobiusParameterVgl(double u, double v);
+
+Figure createNavelvormigeTorus(const int n, const int m);
+Vector3D nvTorusParameterVgl(double u, double v);
+
 
 
 

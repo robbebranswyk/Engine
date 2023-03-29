@@ -137,7 +137,11 @@ Lines2D doProjection(Figures3D &figure){
             if (j.point_indexes.size() == 2){
                 Point2D p1 = doProjection(i.points[j.point_indexes[0]], 1);
                 Point2D p2 = doProjection(i.points[j.point_indexes[1]], 1);
-                lineDrawing.push_back(Line2D(p1, p2, i.color));
+                Line2D line = Line2D(p1, p2, i.color);
+                //Voor z-buffering
+                line.z1 = i.points[j.point_indexes[0]].z;
+                line.z2 = i.points[j.point_indexes[1]].z;
+                lineDrawing.push_back(line);
             } else {
                 for (int k = 0; k < j.point_indexes.size(); k++) {
                     int p1Index = k;
@@ -145,10 +149,13 @@ Lines2D doProjection(Figures3D &figure){
                     if (k == j.point_indexes.size()-1 ){
                         p2Index = 0;
                     }
-
                     Point2D p1 = doProjection(i.points[j.point_indexes[p1Index]], 1);
                     Point2D p2 = doProjection(i.points[j.point_indexes[p2Index]], 1);
-                    lineDrawing.push_back(Line2D(p1, p2, i.color));
+                    Line2D line = Line2D(p1, p2, i.color);
+                    //Voor z-buffering
+                    line.z1 = i.points[j.point_indexes[p1Index]].z;
+                    line.z2 = i.points[j.point_indexes[p2Index]].z;
+                    lineDrawing.push_back(line);
                 }
             }
 
