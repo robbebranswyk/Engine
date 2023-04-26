@@ -13,9 +13,9 @@ Figure createOctahedron();
 Figure createIcosahedron();
 Figure createDodecadron();
 
-Vector3D getMidden(vector<Vector3D> punten);
+Vector3D getMidden(const vector<Vector3D>& punten);
 
-Figure roundingIco(Figure Ico);
+Figure roundingIco(const Figure& Ico);
 Figure createSphere(const int n);
 
 Figure createCone(const int n, const double h);
@@ -35,7 +35,9 @@ Vector3D mobiusParameterVgl(double u, double v);
 Figure createNavelvormigeTorus(const int n, const int m);
 Vector3D nvTorusParameterVgl(double u, double v);
 
-
+//3D-Fractalen
+void generateFractal(Figure& fig, Figures3D& fractal, const int nr_iterations, const double scale);
+//void generateFractalsFromList(Figures3D& tempFigs, const double scale)
 
 
 #endif //ENGINE_3DFIGURES_H

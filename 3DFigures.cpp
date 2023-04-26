@@ -114,7 +114,7 @@ Figure createIcosahedron() {
 }
 
 
-Vector3D getMidden(vector<Vector3D> punten) {
+Vector3D getMidden(const vector<Vector3D>& punten) {
     double x = (punten[0].x + punten[1].x +punten[2].x) / 3;
     double y = (punten[0].y + punten[1].y +punten[2].y) / 3;
     double z = (punten[0].z + punten[1].z +punten[2].z) / 3;
@@ -149,7 +149,7 @@ Figure createDodecadron() {
     return dodecahedron;
 }
 
-Figure roundingIco(Figure Ico) {
+Figure roundingIco(const Figure& Ico) {
     Figure sphere;
     for (auto i : Ico.faces){
         Vector3D A = Ico.points[i.point_indexes[0]];
@@ -452,4 +452,47 @@ Vector3D nvTorusParameterVgl(double u, double v) {
     double z = sin((u/3) - 2*v) + 2*sin((u/3)+v);
 
     return Vector3D::point(x, y, z);
+}
+
+void generateFractal(Figure &fig, Figures3D &fractal, const int nr_iterations, const double scale) {
+    Figures3D tempFractals = {fig}; //we beginnen met 1 figuur = 1 fractaal
+
+    //Aantal hoekpunten
+    int nr_corners = fig.points.size();
+
+    //Aantal iteraties
+    for (int i = 0; i < nr_iterations; i++) {
+
+        Figures3D tempMiniFractals; //Nog een temporary Vector
+
+        //Elke figuur/fractaal overlopen
+        for(Figure miniFig : tempFractals){
+            for (int j = 0; j < nr_corners; j++) {
+                Figure newFig = miniFig;
+
+                //schaalMatrix
+                Matrix scaleM = scaleFigure(1/scale);
+                //Matrix toepassen/schalen
+                applyTransformation(newFig, scaleM);
+
+                //Translatie
+                //verschuif over vector
+                Vector3D translatieVector = miniFig.points[j] - newFig.points[j];
+                //TranslatieMatrix
+                Matrix translateM = translate(translatieVector);
+                //Toepassen/verplaatsen
+                applyTransformation(newFig, translateM);
+
+                //Toevoegen aan de tijdelijke vector tempMiniFractals
+                tempMiniFractals.push_back(newFig);
+            }
+        }
+        if(i == nr_iterations-1){
+            fractal = tempMiniFractals;
+        } else{
+            tempFractals = tempMiniFractals;
+        }
+    }
+
+
 }

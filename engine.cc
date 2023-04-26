@@ -122,27 +122,27 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 }
             }
 
-            else if (type == "Cube"){
+            else if (type == "Cube" or type =="FractalCube"){
                 figure = createCube();
                 figure.color = figureColor;
             }
 
-            else if (type == "Tetrahedron"){
+            else if (type == "Tetrahedron" or type == "FractalTetrahedron"){
                 figure = createTetrahedron();
                 figure.color = figureColor;
             }
 
-            else if (type ==  "Octahedron"){
+            else if (type ==  "Octahedron" or type == "FractalOctahedron"){
                 figure = createOctahedron();
                 figure.color = figureColor;
             }
 
-            else if (type == "Icosahedron"){
+            else if (type == "Icosahedron" or type == "FractalIcosahedron"){
                 figure = createIcosahedron();
                 figure.color = figureColor;
             }
 
-            else if (type == "Dodecahedron"){
+            else if (type == "Dodecahedron" or type == "FractalDodecahedron"){
                 figure = createDodecadron();
                 figure.color = figureColor;
             }
@@ -232,8 +232,22 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
             //Transformatiematrix toepassen op figuur
             applyTransformation(figure, transformaties);
 
-            //Figuur toevoegen aan 3DFigure
-            theFigure.push_back(figure);
+            if (type == "FractalCube" or type == "FractalTetrahedron" or type == "FractalOctahedron"
+                or type == "FractalIcosahedron" or type == "FractalDodecahedron"){
+                int nr_iterations = configuration[figi]["nrIterations"].as_int_or_die();
+                double scaleFractal = configuration[figi]["fractalScale"].as_double_or_die();
+
+                Figures3D fractals;
+                generateFractal(figure, fractals, nr_iterations, scaleFractal);
+
+                for(Figure &fractal : fractals){
+                    theFigure.push_back(fractal);
+                }
+            }
+            else {
+                //Figuur toevoegen aan 3DFigure
+                theFigure.push_back(figure);
+            }
         }
 
         //Figuur aanpassen naar het Eye-coördinaat systeem

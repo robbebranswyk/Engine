@@ -40,7 +40,7 @@ Matrix rotateY(double angle);
 
 Matrix rotateZ(double angle);
 
-Matrix translate(const Vector3D vector);
+Matrix translate(const Vector3D& vector);
 
 void applyTransformation(Figure &fig, const Matrix &m);
 

@@ -60,7 +60,7 @@ Matrix rotateZ(double angle){
 }
 
 //Translatie
-Matrix translate(const Vector3D vector){
+Matrix translate(const Vector3D& vector){
     Matrix translate;
     translate(4,1) = vector.x;
     translate(4,2) = vector.y;
