@@ -7,8 +7,8 @@
 #include <iostream>
 using namespace std;
 #include <vector>
-#include <limits>
 #include <sstream>
+
 
 
 #include "easy_image.h"
@@ -23,11 +23,28 @@ public:
 };
 
 void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image,
-                     unsigned int x0,  unsigned y0, const double z0,
-                     unsigned int x1,  unsigned y1, const double z1,
+                    int x0, int y0, double z0,
+                    int x1, int y1, double z1,
                     const img::Color &color);
 
+vector<Face> triangulate(const Face& face);
+Figures3D triangulateFigure(const Figures3D& theFigure);
 
+void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image,
+                     Vector3D const& A,
+                     Vector3D const& B,
+                     Vector3D const& C,
+                     double d,
+                     double dx,
+                     double dy,
+                     Color color);
+
+img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor);
+
+void onLine(Point2D p1, Point2D p2, double &xI, int yI);
+void xLenXR(Point2D A, Point2D B, Point2D C, int &xL, int &xR, int i);
+
+void incrementZValue(double factor, Vector3D A, Vector3D B, Vector3D C, double &dzdx, double &dzdy);
 
 
 #endif //ENGINE_ZBUFFERING_H

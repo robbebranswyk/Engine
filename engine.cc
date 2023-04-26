@@ -72,10 +72,10 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         input_stream.close();
 
         Lines2D LSystemLines = drawLSystem(l_system, lineColor);
-        return draw2DLines(LSystemLines, size, backColor, false);
+        return draw2DLines(LSystemLines, size, backColor, type);
     }
 
-    else if (type == "Wireframe" or type == "ZBufferedWireframe"){
+    else if (type == "Wireframe" or type == "ZBufferedWireframe" or type == "ZBuffering"){
         //Eyepoint uitlezen en Matrix aanmaken
         vector<double> eye = configuration["General"]["eye"].as_double_tuple_or_die();
         Vector3D eyePoint = Vector3D::point(eye[0], eye[1], eye[2]);
@@ -242,10 +242,11 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         //Omzetten naar vector van 2D lijnen
         Lines2D linesDrawing = doProjection(theFigure);
 
-        if (type == "ZBufferedWireframe"){
-            return draw2DLines(linesDrawing, size, backColor, true);
+        if (type == "ZBuffering"){
+            return drawZBuffFigure(theFigure, linesDrawing, size, backColor);
         }
-        return draw2DLines(linesDrawing, size, backColor);
+
+        return draw2DLines(linesDrawing, size, backColor, type);
     }
 
     else {

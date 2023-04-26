@@ -16,6 +16,7 @@ using namespace std;
 #include "intro.h"
 #include "easy_image.h"
 
+
 //////2D L-Systemen////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Color{
@@ -57,7 +58,9 @@ public:
 
 using Lines2D = list<Line2D>;
 
-img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor, bool zbuf = false);
+void draw2DLinesValues(Lines2D &lines, const int size, double& imageX, double& imageY, double& factor, double& dx, double& dy);
+
+img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor, string type);
 
 Lines2D drawLSystem(LParser::LSystem2D &l_system, Color lineColor);
 #endif //ENGINE_L2DSYSTEMEN_H

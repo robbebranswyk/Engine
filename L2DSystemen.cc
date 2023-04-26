@@ -5,58 +5,21 @@
 #include "L2DSystemen.h"
 #include "ZBuffering.h"
 
-img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor, bool zbuf) {
-    //1. Bepaal de minima en maxima
-    Line2D firstLine = lines.front();
-    double xmin = firstLine.p1.x; double xmax = firstLine.p1.x;
-    double ymin = firstLine.p1.y; double ymax = firstLine.p1.y;
+img::EasyImage draw2DLines(Lines2D &lines, const int size, Color backColor, string type) {
+    double imageX;
+    double imageY;
+    double factor;
+    double dx;
+    double dy;
 
-    for (auto i : lines){
-        if (i.p1.x < xmin){xmin = i.p1.x;}
-        if (i.p2.x < xmin){xmin = i.p2.x;}
-
-        if (i.p1.x > xmax){xmax = i.p1.x;}
-        if (i.p2.x > xmax){xmax = i.p2.x;}
-
-        if (i.p1.y < ymin){ymin = i.p1.y;}
-        if (i.p2.y < ymin){ymin = i.p2.y;}
-
-        if (i.p1.y > ymax){ymax = i.p1.y;}
-        if (i.p2.y > ymax){ymax = i.p2.y;}
-    }
-
-    //2. Bepaal de grootte van de image
-    double rangeX = xmax - xmin;
-    double rangeY = ymax - ymin;
-
-    double imageX = size * (rangeX / max(rangeX, rangeY));
-    double imageY = size * (rangeY / max(rangeX, rangeY));
-    //cout << imageX << " and " << imageY << endl;
-
-    //3. Schaal de lijntekening
-    double factor = 0.95 * (imageX / rangeX);
-
-    for (auto &i : lines){
-        i.p1.x *= factor; i.p1.y *= factor;
-        i.p2.x *= factor; i.p2.y *= factor;
-    }
-
-    //4. Verschuif de tekening
-    pair<double, double> imageM = {factor * (xmin + xmax) / 2.0, factor * (ymin + ymax) / 2.0};
-    double dx = imageX/2.0 - imageM.first;
-    double dy = imageY/2.0 - imageM.second;
-
-    for (auto &i : lines){
-        i.p1.x += dx; i.p1.y += dy;
-        i.p2.x += dx; i.p2.y += dy;
-    }
+    draw2DLinesValues(lines, size, imageX, imageY, factor, dx, dy);
 
     //5. Coördinaten afronden en Lijnen tekenen
     img::EasyImage image(lround(imageX), lround(imageY), backColor.toColor());
     ZBuffer zbuffer = ZBuffer(lround(imageX), lround(imageY));
 
     for (auto line : lines){
-        if(zbuf){
+        if(type == "ZBufferedWireframe"){
             draw_zbuf_line(zbuffer, image, lround(line.p1.x), lround(line.p1.y), line.z1, lround(line.p2.x), lround(line.p2.y), line.z2, line.color.toColor());
         }
         else {
@@ -139,4 +102,52 @@ Lines2D drawLSystem(LParser::LSystem2D &l_system, Color lineColor){
 
 
     return LSystemLines;
+}
+
+void draw2DLinesValues(Lines2D &lines, const int size, double &imageX, double &imageY, double &factor, double &dx, double &dy) {
+    //1. Bepaal de minima en maxima
+    Line2D firstLine = lines.front();
+    double xmin = firstLine.p1.x; double xmax = firstLine.p1.x;
+    double ymin = firstLine.p1.y; double ymax = firstLine.p1.y;
+
+    for (auto i : lines){
+        if (i.p1.x < xmin){xmin = i.p1.x;}
+        if (i.p2.x < xmin){xmin = i.p2.x;}
+
+        if (i.p1.x > xmax){xmax = i.p1.x;}
+        if (i.p2.x > xmax){xmax = i.p2.x;}
+
+        if (i.p1.y < ymin){ymin = i.p1.y;}
+        if (i.p2.y < ymin){ymin = i.p2.y;}
+
+        if (i.p1.y > ymax){ymax = i.p1.y;}
+        if (i.p2.y > ymax){ymax = i.p2.y;}
+    }
+
+    //2. Bepaal de grootte van de image
+    double rangeX = xmax - xmin;
+    double rangeY = ymax - ymin;
+
+    imageX = size * (rangeX / max(rangeX, rangeY));
+    imageY = size * (rangeY / max(rangeX, rangeY));
+    //cout << imageX << " and " << imageY << endl;
+
+    //3. Schaal de lijntekening
+    factor = 0.95 * (imageX / rangeX);
+
+    for (auto &i : lines){
+        i.p1.x *= factor; i.p1.y *= factor;
+        i.p2.x *= factor; i.p2.y *= factor;
+    }
+
+
+    //4. Verschuif de tekening
+    pair<double, double> imageM = {factor * (xmin + xmax) / 2.0, factor * (ymin + ymax) / 2.0};
+    dx = imageX/2.0 - imageM.first;
+    dy = imageY/2.0 - imageM.second;
+
+    for (auto &i : lines){
+        i.p1.x += dx; i.p1.y += dy;
+        i.p2.x += dx; i.p2.y += dy;
+    }
 }
