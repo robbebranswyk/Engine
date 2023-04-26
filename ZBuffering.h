@@ -41,10 +41,10 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image,
 
 img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor);
 
-void onLine(Point2D p1, Point2D p2, double &xI, int yI);
-void xLenXR(Point2D A, Point2D B, Point2D C, int &xL, int &xR, int i);
+void onLine(const Point2D& p1, const Point2D& p2, double &xI, int yI);
+void xLenXR(const Point2D& A, const Point2D& B, const Point2D& C, int &xL, int &xR, int i);
 
-void incrementZValue(double factor, Vector3D A, Vector3D B, Vector3D C, double &dzdx, double &dzdy);
+void incrementZValue(double factor, const Vector3D& A, const Vector3D& B, const Vector3D& C, double &dzdx, double &dzdy);
 
 
 #endif //ENGINE_ZBUFFERING_H

@@ -16,11 +16,12 @@ ZBuffer::ZBuffer(const int width, const int height) {
 void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, int x0, int y0, double z0, int x1, int y1, double z1, const img::Color &color) {
 
     //1/Z bepalen
-    //Lengte vector p1p2 bepalen == aantal pixels van lijn
-    double lengthP1P2 = sqrt( pow((x1-x0),2) + pow((y1-y0), 2));
+    //aantal pixels van lijn = langste lijn breedte OF lengte ≠ lengte lijn
+    double lengthP1P2 = max(abs(x1-x0), abs(y1-y0));
+    //sqrt( pow((x1-x0),2) + pow((y1-y0), 2));
 
     //Loopen over al de pixels en waarde p bepalen en ook de 1/z
-    double a = lengthP1P2 -1;
+    double a = lengthP1P2;
 
     //Code van draw_line
     if (x0 >= image.get_width() || y0 >= image.get_height() || x1 >= image.get_width() || y1 > image.get_height()) {
@@ -32,31 +33,51 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, int x0, int y0, dou
     //Verticale lijn
     if (x0 == x1)
     {
+        int i = 0;
+
+        //In de for-loop zelf geen probleem, maar daarbinne gaan we ervan uit dat z0 de kleinste is van de twee
+        if(y1 < y0){
+            std::swap(x0, x1);
+            std::swap(y0, y1);
+            std::swap(z0, z1);
+        }
+
         //special case for x0 == x1
-        for (unsigned int i = std::min(y0, y1); i <= std::max(y0, y1); i++)
+        for (unsigned int j = std::min(y0, y1); j <= std::max(y0, y1); j++)
         {
-            double valueP = (a-i)/a;
+            double valueP = (a - i) / a;
             double zValue = valueP/z0 + (1-valueP)/z1;
-            if (zValue < zbuffer[x0][i]){
-                zbuffer[x0][i] = zValue;
-                (image)(x0, i) = color;
+            if (zValue < zbuffer[x0][j]){
+                zbuffer[x0][j] = zValue;
+                (image)(x0, j) = color;
             }
 
+            i += 1;
         }
     }
 
     //Horizontale lijn
     else if (y0 == y1)
     {
+        int i = 0;
+
+        //In de for-loop zelf geen probleem, maar daarbinne gaan we ervan uit dat z0 de kleinste is van de twee
+        if(x1 < x0){
+            std::swap(x0, x1);
+            std::swap(y0, y1);
+            std::swap(z0, z1);
+        }
+
         //special case for y0 == y1
-        for (unsigned int i = std::min(x0, x1); i <= std::max(x0, x1); i++)
+        for (unsigned int j = std::min(x0, x1); j <= std::max(x0, x1); j++)
         {
-            double valueP = (a-i)/a;
+            double valueP = (a - i) / a;
             double zValue = valueP/z0 + (1-valueP)/z1;
-            if (zValue < zbuffer[i][y0]){
-                zbuffer[i][y0] = zValue;
-                (image)(i, y0) = color;
+            if (zValue < zbuffer[j][y0]){
+                zbuffer[j][y0] = zValue;
+                (image)(j, y0) = color;
             }
+            i += 1;
 
         }
     }
@@ -73,39 +94,45 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, int x0, int y0, dou
         double m = ((double) y1 - (double) y0) / ((double) x1 - (double) x0);
         if (-1.0 <= m && m <= 1.0)
         {
-            for (unsigned int i = 0; i <= (x1 - x0); i++)
+            int i = 0;
+            for (unsigned int j = 0; j <= (x1 - x0); j++)
             {
-                double valueP = (a-i)/a;
+                double valueP = (a - i) / a;
                 double zValue = valueP/z0 + (1-valueP)/z1;
-                if (zValue < zbuffer[x0+i][(unsigned int) round(y0 + m * i)]){
-                    zbuffer[x0+i][(unsigned int) round(y0 + m * i)] = zValue;
-                    (image)(x0 + i, (unsigned int) round(y0 + m * i)) = color;
+                if (zValue < zbuffer[x0 + j][(unsigned int) round(y0 + m * j)]){
+                    zbuffer[x0 + j][(unsigned int) round(y0 + m * j)] = zValue;
+                    (image)(x0 + j, (unsigned int) round(y0 + m * j)) = color;
                 }
+                i += 1;
 
             }
         }
         else if (m > 1.0)
         {
-            for (unsigned int i = 0; i <= (y1 - y0); i++)
+            int i = 0;
+            for (unsigned int j = 0; j <= (y1 - y0); j++)
             {
                 double valueP = (a-i)/a;
                 double zValue = valueP/z0 + (1-valueP)/z1;
-                if (zValue < zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i]){
-                    zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i] = zValue;
-                    (image)((unsigned int) round(x0 + (i / m)), y0 + i) = color;
+                if (zValue < zbuffer[(unsigned int) round(x0 + (j / m))][y0 + j]){
+                    zbuffer[(unsigned int) round(x0 + (j / m))][y0 + j] = zValue;
+                    (image)((unsigned int) round(x0 + (j / m)), y0 + j) = color;
                 }
+                i += 1;
             }
         }
         else if (m < -1.0)
         {
-            for (unsigned int i = 0; i <= (y0 - y1); i++)
+            int i = 0;
+            for (unsigned int j = 0; j <= (y0 - y1); j++)
             {
-                double valueP = (a-i)/a;
+                double valueP = (a - i) / a;
                 double zValue = valueP/z0 + (1-valueP)/z1;
-                if (zValue < zbuffer[(unsigned int) round(x0 - (i / m))][y0 - i]){
-                    zbuffer[(unsigned int) round(x0 - (i / m))][y0 - i] = zValue;
-                    (image)((unsigned int) round(x0 - (i / m)), y0 - i) = color;
+                if (zValue < zbuffer[(unsigned int) round(x0 - (j / m))][y0 - j]){
+                    zbuffer[(unsigned int) round(x0 - (j / m))][y0 - j] = zValue;
+                    (image)((unsigned int) round(x0 - (j / m)), y0 - j) = color;
                 }
+                i += 1;
 
             }
         }
@@ -216,13 +243,13 @@ img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, cons
     return image;
 }
 
-void onLine(Point2D p1, Point2D p2, double &xI, int yI) {
+void onLine(const Point2D& p1, const Point2D& p2, double &xI, int yI) {
     if ((yI - p1.y) * (yI - p2.y) <= 0 && p1.y != p2.y) {
         xI = p1.x + (p2.x - p1.x) * ((yI - p1.y) / (p2.y - p1.y));
     }
 }
 
-void xLenXR(Point2D A, Point2D B, Point2D C, int &xL, int &xR, int i) {
+void xLenXR(const Point2D& A, const Point2D& B, const Point2D& C, int &xL, int &xR, int i) {
     double xL_AB = numeric_limits<double>::infinity();
     double xR_AB = -numeric_limits<double>::infinity();
 
@@ -246,7 +273,7 @@ void xLenXR(Point2D A, Point2D B, Point2D C, int &xL, int &xR, int i) {
     //cout << to_string(xL) << " " << to_string(xR) << endl;
 }
 
-void incrementZValue(double factor, Vector3D A, Vector3D B, Vector3D C, double &dzdx, double &dzdy) {
+void incrementZValue(double factor, const Vector3D& A, const Vector3D& B, const Vector3D& C, double &dzdx, double &dzdy) {
     Vector3D u = B - A;
     Vector3D v = C - A;
 
