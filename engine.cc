@@ -7,6 +7,7 @@
 #include "3DLineDrawing.h"
 #include "3DFigures.h"
 #include "ZBuffering.h"
+#include "Light.h"
 
 #include <fstream>
 #include <iostream>
@@ -22,9 +23,9 @@ using namespace std;
 img::EasyImage generate_image(const ini::Configuration &configuration)
 {
     //ZBuffer test = ZBuffer(10,20);
-    string type = configuration["General"]["type"].as_string_or_die();
+    string typePicture = configuration["General"]["type"].as_string_or_die();
 
-    if (type == "IntroColorRectangle"){
+    if (typePicture == "IntroColorRectangle"){
         //Informatie INI-file
         int width = configuration["ImageProperties"]["width"].as_int_or_die();
         int height = configuration["ImageProperties"]["height"].as_int_or_die();
@@ -32,7 +33,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         return colorRectangle(width, height);
     }
 
-    else if (type == "IntroBlocks"){
+    else if (typePicture == "IntroBlocks"){
         //Informatie INI-file
         int width = configuration["ImageProperties"]["width"].as_int_or_die();
         int height = configuration["ImageProperties"]["height"].as_int_or_die();
@@ -45,7 +46,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         return colorBlocks(width, height, squareWidth, squareHeight, colorWhite, colorBlack, invert);
     }
 
-    else if (type == "IntroLines"){
+    else if (typePicture == "IntroLines"){
         //Informatie INI-file
         int width = configuration["ImageProperties"]["width"].as_int_or_die();
         int height = configuration["ImageProperties"]["height"].as_int_or_die();
@@ -55,7 +56,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         return introLines(width, height, numbLines, line);
     }
 
-    else if (type == "2DLSystem"){
+    else if (typePicture == "2DLSystem"){
         //Informatie INI-file
         string inputFile = configuration["2DLSystem"]["inputfile"].as_string_or_die();
         int size = configuration["General"]["size"].as_int_or_die();
@@ -72,20 +73,50 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         input_stream.close();
 
         Lines2D LSystemLines = drawLSystem(l_system, lineColor);
-        return draw2DLines(LSystemLines, size, backColor, type);
+        return draw2DLines(LSystemLines, size, backColor, typePicture);
     }
 
-    else if (type == "Wireframe" or type == "ZBufferedWireframe" or type == "ZBuffering"){
+    else if (typePicture == "Wireframe" or typePicture == "ZBufferedWireframe" or typePicture == "ZBuffering" or typePicture == "LightedZBuffering"){
         //Eyepoint uitlezen en Matrix aanmaken
         vector<double> eye = configuration["General"]["eye"].as_double_tuple_or_die();
         Vector3D eyePoint = Vector3D::point(eye[0], eye[1], eye[2]);
         Matrix eyeMatrix = eyePointTrans(eyePoint);
 
-
         //Size en backgroundcolor
         int size = configuration["General"]["size"].as_int_or_die();
         vector<double> backColorDoubles = configuration["General"]["backgroundcolor"].as_double_tuple_or_die();
         Color backColor = Color(backColorDoubles[0], backColorDoubles[1], backColorDoubles[2]);
+
+        //Lichtbronnen maken
+        Lights3D lightSources;
+        if(typePicture == "LightedZBuffering"){
+            int nrOfLightSources = configuration["General"]["nrLights"].as_int_or_die();
+            for (int i = 0; i < nrOfLightSources; i++) {
+                string lighti = "Light" + to_string(i);
+
+                //Licht aanmaken en ambient factor toevoegen
+                Light light;
+                vector<double> ambientLight = configuration[lighti]["ambientLight"].as_double_tuple_or_die();
+                light.ambientLight = Color(ambientLight[0], ambientLight[1], ambientLight[2]);
+
+                //Diffuus factor
+                light.diffuseLight = Color(0,0,0);
+
+                //Specular factor
+                light.specularLight = Color(0,0,0);
+
+                //Toevoegen aan de vector
+                lightSources.push_back(light);
+            }
+        } else {
+            Light lightSrc;
+            lightSrc.ambientLight = Color(1.0, 1.0, 1.0);
+            lightSrc.diffuseLight = Color(0.0, 0.0, 0.0);
+            lightSrc.specularLight = Color(0.0, 0.0, 0.0);
+
+            lightSources.push_back(lightSrc);
+        }
+
 
         //De figuur uitlezen
         list<Figure> theFigure;
@@ -94,13 +125,18 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
             string figi = "Figure" + to_string(i);
 
             //Kleur lezen en Figuur aanmaken
-            vector<double> colorDoubles = configuration[figi]["color"].as_double_tuple_or_die();
-            Color figureColor = Color(colorDoubles[0], colorDoubles[1], colorDoubles[2]);
-            string type = configuration[figi]["type"].as_string_or_die();
+            vector<double> colorDoubles;
+            Color figureColor;
+            if(typePicture != "LightedZBuffering") {
+                 colorDoubles = configuration[figi]["color"].as_double_tuple_or_die();
+                 figureColor = Color(colorDoubles[0], colorDoubles[1], colorDoubles[2]);
+            }
+
+            string typeFigure = configuration[figi]["type"].as_string_or_die();
             Figure figure;
 
-            if (type == "LineDrawing") {
-                figure = Figure(figureColor);
+            if (typeFigure == "LineDrawing") {
+                figure = Figure();
 
                 //De punten van de figuur uitlezen en aanmaken
                 for (int j = 0; j < configuration[figi]["nrPoints"].as_int_or_die(); j++) {
@@ -122,61 +158,52 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 }
             }
 
-            else if (type == "Cube" or type =="FractalCube"){
+            else if (typeFigure == "Cube" or typeFigure == "FractalCube"){
                 figure = createCube();
-                figure.color = figureColor;
             }
 
-            else if (type == "Tetrahedron" or type == "FractalTetrahedron"){
+            else if (typeFigure == "Tetrahedron" or typeFigure == "FractalTetrahedron"){
                 figure = createTetrahedron();
-                figure.color = figureColor;
             }
 
-            else if (type ==  "Octahedron" or type == "FractalOctahedron"){
+            else if (typeFigure == "Octahedron" or typeFigure == "FractalOctahedron"){
                 figure = createOctahedron();
-                figure.color = figureColor;
             }
 
-            else if (type == "Icosahedron" or type == "FractalIcosahedron"){
+            else if (typeFigure == "Icosahedron" or typeFigure == "FractalIcosahedron"){
                 figure = createIcosahedron();
-                figure.color = figureColor;
             }
 
-            else if (type == "Dodecahedron" or type == "FractalDodecahedron"){
+            else if (typeFigure == "Dodecahedron" or typeFigure == "FractalDodecahedron"){
                 figure = createDodecadron();
-                figure.color = figureColor;
             }
 
-            else if (type == "Sphere"){
+            else if (typeFigure == "Sphere"){
                 int n = configuration[figi]["n"].as_int_or_die();
                 figure = createSphere(n);
-                figure.color = figureColor;
             }
 
-            else if (type == "Cone"){
+            else if (typeFigure == "Cone"){
                 int n = configuration[figi]["n"].as_int_or_die();
                 double h = configuration[figi]["height"].as_double_or_die();
                 figure = createCone(n, h);
-                figure.color = figureColor;
             }
 
-            else if (type == "Cylinder"){
+            else if (typeFigure == "Cylinder"){
                 int n = configuration[figi]["n"].as_int_or_die();
                 double h = configuration[figi]["height"].as_double_or_die();
                 figure = createCylinder(n, h);
-                figure.color = figureColor;
             }
 
-            else if (type == "Torus"){
+            else if (typeFigure == "Torus"){
                 int n = configuration[figi]["n"].as_int_or_die();
                 int m = configuration[figi]["m"].as_int_or_die();
                 double r = configuration[figi]["r"].as_double_or_die();
                 double R = configuration[figi]["R"].as_double_or_die();
                 figure = createTorus(r, R, n, m);
-                figure.color = figureColor;
             }
 
-            else if (type ==  "3DLSystem"){
+            else if (typeFigure == "3DLSystem"){
                 string inputfile = configuration[figi]["inputfile"].as_string_or_die();
 
                 LParser::LSystem3D l_system;
@@ -185,23 +212,20 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 input_stream.close();
 
                 figure = draw3DLsystem(l_system);
-                figure.color = figureColor;
 
             }
 
             //EXTRA
-            else if (type == "Mobius"){
+            else if (typeFigure == "Mobius"){
                 int n = configuration[figi]["n"].as_int_or_die();
                 int m = configuration[figi]["m"].as_int_or_die();
                 figure = createMobius(n, m);
-                figure.color = figureColor;
             }
 
-            else if (type == "nvTorus"){
+            else if (typeFigure == "nvTorus"){
                 int n = configuration[figi]["n"].as_int_or_die();
                 int m = configuration[figi]["m"].as_int_or_die();
                 figure = createNavelvormigeTorus(n, m);
-                figure.color = figureColor;
             }
 
             //De verschillende transformaties uitlezen en toepassen op de figuur
@@ -232,8 +256,34 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
             //Transformatiematrix toepassen op figuur
             applyTransformation(figure, transformaties);
 
-            if (type == "FractalCube" or type == "FractalTetrahedron" or type == "FractalOctahedron"
-                or type == "FractalIcosahedron" or type == "FractalDodecahedron"){
+            //LICHT en KLEUR
+            if(typePicture == "LightedZBuffering"){
+                //Belichtingswaarde inlezen
+                vector<double> ambientLight = configuration[figi]["ambientReflection"].as_double_tuple_or_die();
+                figure.ambientReflection = Color(ambientLight[0], ambientLight[1], ambientLight[2]);
+
+                //Diffuus factor
+                figure.diffuseReflection = Color(0,0,0);
+
+                //Specular factor
+                figure.specularReflection = Color(0,0,0);
+
+                figure.reflectionCoefficient = 0;
+
+            } else {
+                figure.ambientReflection = figureColor;
+
+                //Diffuus factor
+                figure.diffuseReflection = Color(0,0,0);
+
+                //Specular factor
+                figure.specularReflection = Color(0,0,0);
+
+                figure.reflectionCoefficient = 0;
+            }
+
+            if (typeFigure == "FractalCube" or typeFigure == "FractalTetrahedron" or typeFigure == "FractalOctahedron"
+                or typeFigure == "FractalIcosahedron" or typeFigure == "FractalDodecahedron"){
                 int nr_iterations = configuration[figi]["nrIterations"].as_int_or_die();
                 double scaleFractal = configuration[figi]["fractalScale"].as_double_or_die();
 
@@ -256,11 +306,11 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         //Omzetten naar vector van 2D lijnen
         Lines2D linesDrawing = doProjection(theFigure);
 
-        if (type == "ZBuffering"){
-            return drawZBuffFigure(theFigure, linesDrawing, size, backColor);
+        if (typePicture == "ZBuffering" or typePicture == "LightedZBuffering"){
+            return drawZBuffFigure(theFigure, linesDrawing, size, backColor, lightSources);
         }
 
-        return draw2DLines(linesDrawing, size, backColor, type);
+        return draw2DLines(linesDrawing, size, backColor, typePicture);
     }
 
     else {

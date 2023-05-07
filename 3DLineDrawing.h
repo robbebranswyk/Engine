@@ -20,13 +20,20 @@ public:
 
 class Figure{
 public:
-    Figure(const Color &color) : color(color) {}
+    vector<Vector3D> points;
+    vector<Face> faces;
+
+    //Kleur
+    Color ambientReflection;
+    Color diffuseReflection;
+    Color specularReflection;
+    double reflectionCoefficient;
 
     Figure() {}
 
-    vector<Vector3D> points;
-    vector<Face> faces;
-    Color color;
+    Color resultingColor();
+
+
 };
 
 typedef list<Figure> Figures3D;

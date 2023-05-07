@@ -9,8 +9,7 @@ using namespace std;
 #include <vector>
 #include <sstream>
 
-
-
+#include "Light.h"
 #include "easy_image.h"
 #include "L2DSystemen.h"
 #include "3DLineDrawing.h"
@@ -37,9 +36,12 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image,
                      double d,
                      double dx,
                      double dy,
-                     Color color);
+                     Color ambientReflection,
+                     Color diffuseReflection,
+                     Color specularReflection, double reflectionCoeff,
+                     Lights3D& lightSources);
 
-img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor);
+img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor, Lights3D& lightSources);
 
 void onLine(const Point2D& p1, const Point2D& p2, double &xI, int yI);
 void xLenXR(const Point2D& A, const Point2D& B, const Point2D& C, int &xL, int &xR, int i);

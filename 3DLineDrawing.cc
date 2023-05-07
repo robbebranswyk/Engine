@@ -137,7 +137,7 @@ Lines2D doProjection(Figures3D &figure){
             if (j.point_indexes.size() == 2){
                 Point2D p1 = doProjection(i.points[j.point_indexes[0]], 1);
                 Point2D p2 = doProjection(i.points[j.point_indexes[1]], 1);
-                Line2D line = Line2D(p1, p2, i.color);
+                Line2D line = Line2D(p1, p2, i.resultingColor());
                 //Voor z-buffering
                 line.z1 = i.points[j.point_indexes[0]].z;
                 line.z2 = i.points[j.point_indexes[1]].z;
@@ -151,7 +151,7 @@ Lines2D doProjection(Figures3D &figure){
                     }
                     Point2D p1 = doProjection(i.points[j.point_indexes[p1Index]], 1);
                     Point2D p2 = doProjection(i.points[j.point_indexes[p2Index]], 1);
-                    Line2D line = Line2D(p1, p2, i.color);
+                    Line2D line = Line2D(p1, p2, i.resultingColor());
                     //Voor z-buffering
                     line.z1 = i.points[j.point_indexes[p1Index]].z;
                     line.z2 = i.points[j.point_indexes[p2Index]].z;
@@ -167,3 +167,20 @@ Lines2D doProjection(Figures3D &figure){
 Face::Face(const vector<int> &pointIndexes) : point_indexes(pointIndexes) {}
 
 Face::Face() {}
+
+Color Figure::resultingColor() {
+    double red = ambientReflection.red + diffuseReflection.red + specularReflection.red;
+    double green = ambientReflection.green+ diffuseReflection.green+ specularReflection.green;
+    double blue = ambientReflection.blue + diffuseReflection.blue + specularReflection.blue;
+
+    vector<double> colors = {red, green, blue};
+    for(double color : colors){
+        if (color >= 1){
+            color = 1;
+        }
+    }
+
+    Color result = Color(red, green, blue);
+
+    return result;
+}

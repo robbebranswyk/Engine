@@ -39,5 +39,7 @@ Vector3D nvTorusParameterVgl(double u, double v);
 void generateFractal(Figure& fig, Figures3D& fractal, const int nr_iterations, const double scale);
 //void generateFractalsFromList(Figures3D& tempFigs, const double scale)
 
+void copyColors(Figure &fig1, const Figure& fig2);
+
 
 #endif //ENGINE_3DFIGURES_H

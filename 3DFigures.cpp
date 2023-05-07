@@ -496,3 +496,10 @@ void generateFractal(Figure &fig, Figures3D &fractal, const int nr_iterations, c
 
 
 }
+
+void copyColors(Figure &fig1, const Figure& fig2) {
+    fig1.ambientReflection = fig2.ambientReflection;
+    fig1.diffuseReflection = fig2.diffuseReflection;
+    fig1.specularReflection = fig2.specularReflection;
+    fig1.reflectionCoefficient = fig2.reflectionCoefficient;
+}

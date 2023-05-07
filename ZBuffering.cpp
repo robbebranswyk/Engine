@@ -3,6 +3,7 @@
 //
 
 #include "ZBuffering.h"
+#include "3DFigures.h"
 #include <limits>
 #include <algorithm>
 
@@ -155,7 +156,7 @@ Figures3D triangulateFigure(const Figures3D &theFigure) {
     for (const Figure &fig : theFigure){
         Figure triangFig;
         triangFig.points = fig.points;
-        triangFig.color = fig.color;
+        copyColors(triangFig, fig);
         for (const Face &i : fig.faces){
             vector<Face> triangFaces = triangulate(i);
             for (Face &j : triangFaces){
@@ -168,7 +169,8 @@ Figures3D triangulateFigure(const Figures3D &theFigure) {
 }
 
 void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, const Vector3D &A, const Vector3D &B, const Vector3D &C,
-                     double d, double dx, double dy, Color color) {
+                     double d, double dx, double dy, Color ambientReflection, Color diffuseReflection,
+                     Color specularReflection, double reflectionCoeff, Lights3D& lightSources) {
 
     //Driehoek projecteren
     Point2D projA = Point2D(0,0);
@@ -193,6 +195,11 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, const Vector3D &A,
     double yG = (projA.y + projB.y + projC.y)/3;
     double zGValue = 1.0/(3.0*A.z) + 1.0/(3.0*B.z) + 1.0/(3.0*C.z);
 
+    //Licht berekenen
+    calculateAmbient(ambientReflection, lightSources);
+
+
+
     for (int y = yMin; y <= yMax; y++) {
         int xL;
         int xR;
@@ -205,7 +212,7 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, const Vector3D &A,
             //cout << to_string(zValue)<< endl;
             if (zValue < zbuffer[x][y]){
                 zbuffer[x][y] = zValue;
-                (image)(x, y) = color.toColor();
+                (image)(x, y) = resultingColor(ambientReflection, diffuseReflection, specularReflection).toColor();
             }
             //cout << to_string(x) << ", " << to_string(y) << ": dzdx = " << to_string(dzdx) << " en dzdy = " << to_strin§g(dzdy) << endl;
         }
@@ -216,7 +223,8 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, const Vector3D &A,
 
 }
 
-img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor) {
+img::EasyImage
+drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor, Lights3D& lightSources) {
     //Triangulatie
     Figures3D theFigureTrian = triangulateFigure(theFigure);
 
@@ -236,7 +244,8 @@ img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, cons
             Vector3D A = fig.points[face.point_indexes[0]];
             Vector3D B = fig.points[face.point_indexes[1]];
             Vector3D C = fig.points[face.point_indexes[2]];
-            draw_zbuf_triag(zbuffer, image, A, B, C, factor, dx, dy, fig.color);
+            draw_zbuf_triag(zbuffer, image, A, B, C, factor, dx, dy,
+                            fig.ambientReflection, fig.diffuseReflection, fig.specularReflection, fig.reflectionCoefficient, lightSources);
         }
     }
 
