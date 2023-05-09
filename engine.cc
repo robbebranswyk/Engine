@@ -94,25 +94,55 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
             for (int i = 0; i < nrOfLightSources; i++) {
                 string lighti = "Light" + to_string(i);
 
-                //Licht aanmaken en ambient factor toevoegen
-                Light light;
+                //ambient factor
                 vector<double> ambientLight = configuration[lighti]["ambientLight"].as_double_tuple_or_die();
-                light.ambientLight = Color(ambientLight[0], ambientLight[1], ambientLight[2]);
+                Color ambientLightColor = Color(ambientLight[0], ambientLight[1], ambientLight[2]);
 
                 //Diffuus factor
-                light.diffuseLight = Color(0,0,0);
+                vector<double> diffuseLight;
+                bool diffuse = configuration[lighti]["diffuseLight"].as_double_tuple_if_exists(diffuseLight);
+                bool infinity;
+                Vector3D ldVector;
+
+                Color diffuseLightColor;
+                if(diffuse){
+                    diffuseLightColor = Color(diffuseLight[0], diffuseLight[1], diffuseLight[2]);
+                    infinity = configuration[lighti]["infinity"].as_bool_or_die();
+
+                    //ldVector (direction)
+                    vector<double> lightDirectionInf = configuration[lighti]["direction"].as_double_tuple_or_die();
+                    ldVector = Vector3D::vector(lightDirectionInf[0], lightDirectionInf[1], lightDirectionInf[2]);
+                } else {
+                    diffuseLightColor = Color(0,0,0);
+                }
 
                 //Specular factor
-                light.specularLight = Color(0,0,0);
+                Color specularLightColor = Color(0,0,0);
 
-                //Toevoegen aan de vector
-                lightSources.push_back(light);
+                //Juiste klasse Light aanmaken en toevoegen aan vector
+                if(diffuse){
+                    if(infinity){
+                        InfLight* newLight = new InfLight();
+                        newLight->ambientLight = ambientLightColor;
+                        newLight->diffuseLight = diffuseLightColor;
+                        newLight->specularLight = specularLightColor;
+                        newLight->ldVector = ldVector;
+                        lightSources.push_back(newLight);
+                    }
+                } else{
+                    Light* newLight = new Light();
+                    newLight->ambientLight = ambientLightColor;
+                    newLight->diffuseLight = diffuseLightColor;
+                    newLight->specularLight = specularLightColor;
+                    lightSources.push_back(newLight);
+                }
+
             }
         } else {
-            Light lightSrc;
-            lightSrc.ambientLight = Color(1.0, 1.0, 1.0);
-            lightSrc.diffuseLight = Color(0.0, 0.0, 0.0);
-            lightSrc.specularLight = Color(0.0, 0.0, 0.0);
+            Light* lightSrc = new Light();
+            lightSrc->ambientLight = Color(1.0, 1.0, 1.0);
+            lightSrc->diffuseLight = Color(0.0, 0.0, 0.0);
+            lightSrc->specularLight = Color(0.0, 0.0, 0.0);
 
             lightSources.push_back(lightSrc);
         }
@@ -263,7 +293,13 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 figure.ambientReflection = Color(ambientLight[0], ambientLight[1], ambientLight[2]);
 
                 //Diffuus factor
-                figure.diffuseReflection = Color(0,0,0);
+                vector<double> diffuseLight;
+                if(configuration[figi]["diffuseReflection"].as_double_tuple_if_exists(diffuseLight)){
+                    figure.diffuseReflection = Color(diffuseLight[0], diffuseLight[1], diffuseLight[2]);
+                } else {
+                    figure.diffuseReflection = Color(0,0,0);
+                }
+
 
                 //Specular factor
                 figure.specularReflection = Color(0,0,0);

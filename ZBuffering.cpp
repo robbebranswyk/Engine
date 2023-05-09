@@ -197,6 +197,8 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, const Vector3D &A,
 
     //Licht berekenen
     calculateAmbient(ambientReflection, lightSources);
+    calculateDiffuse(diffuseReflection, lightSources, A, B, C);
+    cout << "(" << to_string(diffuseReflection.red) << ", " << to_string(diffuseReflection.green) << ", " << to_string(diffuseReflection.blue) << endl;
 
 
 
@@ -283,13 +285,18 @@ void xLenXR(const Point2D& A, const Point2D& B, const Point2D& C, int &xL, int &
 }
 
 void incrementZValue(double factor, const Vector3D& A, const Vector3D& B, const Vector3D& C, double &dzdx, double &dzdy) {
-    Vector3D u = B - A;
-    Vector3D v = C - A;
-
-    Vector3D w = Vector3D::cross(u, v);
+    Vector3D w = normaalVector(A, B, C);
     double k = w.x*A.x + w.y*A.y + w.z*A.z;
 
     dzdx = w.x/(-factor*k);
     dzdy = w.y/(-factor*k);
+}
+
+Vector3D normaalVector(const Vector3D &A, const Vector3D &B, const Vector3D &C) {
+    Vector3D u = B - A;
+    Vector3D v = C - A;
+
+    Vector3D w = Vector3D::cross(u, v);
+    return w;
 }
 
