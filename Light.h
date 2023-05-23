@@ -53,7 +53,7 @@ void calculateDiffuse(Color &diffuse, Lights3D &lightSources, const Vector3D &A,
                       Vector3D &pointInEye);
 
 void calculateSpecular(Color &specular, double reflectionFactor, Lights3D &lightSources, const Vector3D &A,
-                       const Vector3D &B, const Vector3D &C, Vector3D &pointInEye);
+                       const Vector3D &B, const Vector3D &C, Vector3D &pointInEyeCoordSystem);
 
 Color resultingColor(const Color &ambient, const Color &diffuse, const Color &specular, double reflectionFactor,
                      Lights3D &lightSources, const Vector3D &A, const Vector3D &B, const Vector3D &C,

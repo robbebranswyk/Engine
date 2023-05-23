@@ -487,14 +487,10 @@ void generateFractal(Figure &fig, Figures3D &fractal, const int nr_iterations, c
                 tempMiniFractals.push_back(newFig);
             }
         }
-        if(i == nr_iterations-1){
-            fractal = tempMiniFractals;
-        } else{
-            tempFractals = tempMiniFractals;
-        }
+        tempFractals = tempMiniFractals;
     }
 
-
+    fractal = tempFractals;
 }
 
 void copyColors(Figure &fig1, const Figure& fig2) {

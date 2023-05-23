@@ -36,22 +36,30 @@ void calculateDiffuse(Color &diffuse, Lights3D &lightSources, const Vector3D &A,
 }
 
 void calculateSpecular(Color &specular, double reflectionFactor, Lights3D &lightSources, const Vector3D &A,
-                       const Vector3D &B, const Vector3D &C, Vector3D &pointInEye) {
+                       const Vector3D &B, const Vector3D &C, Vector3D &pointInEyeCoordSystem) {
 
     Color resultTempSpecular = Color(0,0,0);
     for(Light* light : lightSources){
         Vector3D l;
         Vector3D n;
-        double cosFactor = light->diffuseExtraFactor(A, B, C, pointInEye, n, l);
+        double cosFactor = light->diffuseExtraFactor(A, B, C, pointInEyeCoordSystem, n, l);
 
         Vector3D r = 2*n*cosFactor + l;
         r = Vector3D::normalise(r);
 
-        Vector3D pointToEye =  - pointInEye;
+        //Hardcode test voor specular_light001.ini met eye = (100,50,75)
+        /*Vector3D pointToEye = Vector3D::vector(100- pointInEyeCoordSystem.x, 50- pointInEyeCoordSystem.y, 75- pointInEyeCoordSystem.z);
+        pointToEye = Vector3D::normalise(pointToEye);*/
+
+        Vector3D pointToEye = Vector3D::vector(- pointInEyeCoordSystem.x, - pointInEyeCoordSystem.y, - pointInEyeCoordSystem.z);
         pointToEye = Vector3D::normalise(pointToEye);
 
         double cosBeta = Vector3D::dot(r, pointToEye);
         cosBeta = pow(cosBeta, reflectionFactor);
+
+        if(cosBeta < 0){
+            cosBeta = 0;
+        }
 
         Color tempSpecular = Color(specular.red * light->specularLight.red, specular.green * light->specularLight.green, specular.blue * light->specularLight.blue);
         tempSpecular.red *= cosBeta;
