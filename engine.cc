@@ -98,6 +98,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 vector<double> ambientLight = configuration[lighti]["ambientLight"].as_double_tuple_or_die();
                 Color ambientLightColor = Color(ambientLight[0], ambientLight[1], ambientLight[2]);
 
+
                 //Diffuus factor
                 vector<double> diffuseLight;
                 bool diffuse = configuration[lighti]["diffuseLight"].as_double_tuple_if_exists(diffuseLight);
@@ -109,15 +110,14 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                     diffuseLightColor = Color(diffuseLight[0], diffuseLight[1], diffuseLight[2]);
                     infinity = configuration[lighti]["infinity"].as_bool_or_die();
 
-                    //ldVector (direction)
-                    vector<double> lightDirectionInf = configuration[lighti]["direction"].as_double_tuple_or_die();
-                    ldVector = Vector3D::vector(lightDirectionInf[0], lightDirectionInf[1], lightDirectionInf[2]);
+
                 } else {
                     diffuseLightColor = Color(0,0,0);
                 }
 
                 //Specular factor
-                Color specularLightColor = Color(0,0,0);
+                vector<double> specularLight = configuration[lighti]["specularLight"].as_double_tuple_or_default({0,0,0});
+                Color specularLightColor = Color(specularLight[0], specularLight[1], specularLight[2]);
 
                 //Juiste klasse Light aanmaken en toevoegen aan vector
                 if(diffuse){
@@ -126,7 +126,26 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                         newLight->ambientLight = ambientLightColor;
                         newLight->diffuseLight = diffuseLightColor;
                         newLight->specularLight = specularLightColor;
+
+                        //ldVector (direction)
+                        vector<double> lightDirectionInf = configuration[lighti]["direction"].as_double_tuple_or_die();
+                        ldVector = Vector3D::vector(lightDirectionInf[0], lightDirectionInf[1], lightDirectionInf[2]);
+
                         newLight->ldVector = ldVector;
+                        lightSources.push_back(newLight);
+                    } else {
+                        PointLight* newLight = new PointLight();
+                        newLight->ambientLight = ambientLightColor;
+                        newLight->diffuseLight = diffuseLightColor;
+                        newLight->specularLight = specularLightColor;
+
+                        //locatie en spotangle
+                        vector<double> lightLocationPoint = configuration[lighti]["location"].as_double_tuple_or_die();
+                        newLight->location = Vector3D::point(lightLocationPoint[0], lightLocationPoint[1], lightLocationPoint[2]);
+
+                        double spotAngle = configuration[lighti]["spotAngle"].as_double_or_default(M_PI/2);
+                        newLight->spotAngle = spotAngle;
+
                         lightSources.push_back(newLight);
                     }
                 } else{
@@ -302,9 +321,10 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
 
 
                 //Specular factor
-                figure.specularReflection = Color(0,0,0);
+                vector<double> specularRefl = configuration[figi]["specularReflection"].as_double_tuple_or_default({0,0,0});
+                figure.specularReflection = Color(specularRefl[0],specularRefl[1],specularRefl[2]);
 
-                figure.reflectionCoefficient = 0;
+                figure.reflectionCoefficient = configuration[figi]["reflectionCoefficient"].as_double_or_default(0);
 
             } else {
                 figure.ambientReflection = figureColor;
@@ -338,6 +358,10 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
 
         //Figuur aanpassen naar het Eye-coördinaat systeem
         applyTransformation(theFigure, eyeMatrix);
+
+        //Lichten transformeren
+        transformLights(lightSources, eyeMatrix);
+
 
         //Omzetten naar vector van 2D lijnen
         Lines2D linesDrawing = doProjection(theFigure);

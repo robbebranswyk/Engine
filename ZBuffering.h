@@ -29,19 +29,12 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image,
 vector<Face> triangulate(const Face& face);
 Figures3D triangulateFigure(const Figures3D& theFigure);
 
-void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image,
-                     Vector3D const& A,
-                     Vector3D const& B,
-                     Vector3D const& C,
-                     double d,
-                     double dx,
-                     double dy,
-                     Color ambientReflection,
-                     Color diffuseReflection,
-                     Color specularReflection, double reflectionCoeff,
-                     Lights3D& lightSources);
+void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, Vector3D const &A, Vector3D const &B, Vector3D const &C,
+                     double d, double dx, double dy, Color ambientReflection, Color diffuseReflection,
+                     Color specularReflection, double reflectionCoeff, Lights3D &lightSources);
 
-img::EasyImage drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor, Lights3D& lightSources);
+img::EasyImage
+drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Color backColor, Lights3D &lightSources);
 
 void onLine(const Point2D& p1, const Point2D& p2, double &xI, int yI);
 void xLenXR(const Point2D& A, const Point2D& B, const Point2D& C, int &xL, int &xR, int i);
