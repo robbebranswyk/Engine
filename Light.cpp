@@ -177,7 +177,9 @@ double PointLight::diffuseExtraFactor(const Vector3D &A, const Vector3D &B, cons
 
     if(cosValue > cosSpot){
         cosValue = 1 - (1-cosValue)/(1-cosSpot);
-    } else {
+    }
+
+    if(cosValue < 0){
         cosValue = 0;
     }
 

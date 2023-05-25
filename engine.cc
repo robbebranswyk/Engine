@@ -324,7 +324,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                 vector<double> specularRefl = configuration[figi]["specularReflection"].as_double_tuple_or_default({0,0,0});
                 figure.specularReflection = Color(specularRefl[0],specularRefl[1],specularRefl[2]);
 
-                figure.reflectionCoefficient = configuration[figi]["reflectionCoefficient"].as_double_or_default(0);
+                figure.reflectionCoefficient = configuration[figi]["reflectionCoefficient"].as_double_or_default(1);
 
             } else {
                 figure.ambientReflection = figureColor;
