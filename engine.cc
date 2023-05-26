@@ -143,7 +143,8 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
                         vector<double> lightLocationPoint = configuration[lighti]["location"].as_double_tuple_or_die();
                         newLight->location = Vector3D::point(lightLocationPoint[0], lightLocationPoint[1], lightLocationPoint[2]);
 
-                        double spotAngle = configuration[lighti]["spotAngle"].as_double_or_default(M_PI/2);
+                        double spotAngle = configuration[lighti]["spotAngle"].as_double_or_default(90);
+                        spotAngle = (spotAngle*M_PI)/180; //Van graden naar radialen
                         newLight->spotAngle = spotAngle;
 
                         lightSources.push_back(newLight);

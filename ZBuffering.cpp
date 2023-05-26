@@ -251,6 +251,10 @@ drawZBuffFigure(Figures3D &theFigure, Lines2D &linesDrawing, const int size, Col
             Vector3D A = fig.points[face.point_indexes[0]];
             Vector3D B = fig.points[face.point_indexes[1]];
             Vector3D C = fig.points[face.point_indexes[2]];
+            /*cout << endl;
+            cout << "A: " << "(" << to_string(A.x) << ", " << to_string(A.y) << ", " << to_string(A.z) << ")" << endl;
+            cout << "B: " << "(" << to_string(B.x) << ", " << to_string(B.y) << ", " << to_string(B.z) << ")" << endl;
+            cout << "C: " << "(" << to_string(C.x) << ", " << to_string(C.y) << ", " << to_string(C.z) << ")" << endl;*/
             draw_zbuf_triag(zbuffer, image, A, B, C, factor, dx, dy,
                             fig.ambientReflection, fig.diffuseReflection, fig.specularReflection,
                             fig.reflectionCoefficient, lightSources);

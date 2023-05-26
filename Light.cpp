@@ -96,7 +96,7 @@ Color resultingColor(const Color &ambient, const Color &diffuse, const Color &sp
     }
     Color result = Color(threeColors[0], threeColors[1], threeColors[2]);
 
-    //cout << to_string(result.red) << ", " << to_string(result.green) << ", " << to_string(result.blue) << endl;
+    //cout << to_string(int(round(result.red * 255))) << ", " << to_string(int(round(result.green * 255))) << ", " << to_string(int(round(result.blue * 255))) << endl;
 
     return result;
 }
@@ -118,13 +118,6 @@ Vector3D calculateEyePoint(double zValue, double d, double xProj, double yProj, 
 
 
 
-
-double
-Light::diffuseExtraFactor(const Vector3D &A, const Vector3D &B, const Vector3D &C, Vector3D &pointInEye, Vector3D &n,
-                          Vector3D &l) {
-    return 0;
-}
-
 void Light::applyTransformation(const Matrix &m) {
     return;
 }
@@ -137,7 +130,11 @@ void PointLight::applyTransformation(const Matrix &m) {
     location *= m;
 }
 
-
+double
+Light::diffuseExtraFactor(const Vector3D &A, const Vector3D &B, const Vector3D &C, Vector3D &pointInEye, Vector3D &n,
+                          Vector3D &l) {
+    return 0;
+}
 
 double
 InfLight::diffuseExtraFactor(const Vector3D &A, const Vector3D &B, const Vector3D &C, Vector3D &pointInEye, Vector3D &n,
@@ -148,10 +145,10 @@ InfLight::diffuseExtraFactor(const Vector3D &A, const Vector3D &B, const Vector3
     n = Vector3D::cross(u, v);
     n = Vector3D::normalise(n);
 
-    l = ldVector * (-1);
+    l = ldVector;
     l = Vector3D::normalise(l);
 
-    double cos = Vector3D::dot(n, l); //n.x * l.x + n.y * l.y + n.z * l.z;
+    double cos = Vector3D::dot(n, -l); //n.x * l.x + n.y * l.y + n.z * l.z;
     if (cos < 0){
         cos = 0;
     }
@@ -174,10 +171,8 @@ double PointLight::diffuseExtraFactor(const Vector3D &A, const Vector3D &B, cons
     double cosSpot = cos(spotAngle);
 
     //cout << to_string(cosValue) << endl;
-
-    if(cosValue > cosSpot){
-        cosValue = 1 - (1-cosValue)/(1-cosSpot);
-    }
+    double test = 1-cosSpot;
+    cosValue = 1 - (1-cosValue)/(1-cosSpot);
 
     if(cosValue < 0){
         cosValue = 0;
